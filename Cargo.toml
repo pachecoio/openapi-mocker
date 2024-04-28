@@ -2,6 +2,12 @@
 name = "openapi-mocker"
 version = "0.1.0"
 edition = "2021"
+repository = "https://github.com/pachecoio/openapi-mocker"
+keywords = ["openapi", "mock", "mock-server"]
+categories = ["web-programming"]
+readme = "readme.md"
+authors = ["Thiago Pacheco"]
+description = "A simple OpenAPI 3.0 mocker"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
