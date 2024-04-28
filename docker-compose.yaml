@@ -1,0 +1,17 @@
+services:
+  app:
+    image: thisk8brd/openapi-mocker
+    build:
+      context: .
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./tests/testdata/petstore.yaml:/app/openapi.yaml
+    command: ["/app/openapi.yaml"]
+    networks:
+      - openapi-mocker
+
+networks:
+  openapi-mocker:
+    driver: bridge
+

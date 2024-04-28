@@ -15,7 +15,7 @@ async fn main() -> std::io::Result<()> {
     let data = web::Data::new(AppState { spec });
 
     let server = HttpServer::new(move || App::new().app_data(data.clone()).service(get_scope()))
-        .bind(("127.0.0.1", port))
+        .bind(("0.0.0.0", port))
         .expect("Failed to bind to port");
 
     server.run().await.expect("Failed to run server");
