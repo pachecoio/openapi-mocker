@@ -56,6 +56,16 @@ cargo install openapi-mocker
     openapi-mocker openapi.yaml
     ```
 
+    - Or, Run with docker:
+
+    ```bash
+    docker run \
+        -v $(pwd)/tests/testdata/petstore.yaml:/openapi.yaml \
+        -p 8080:8080 \
+        thisk8brd/openapi-mocker:latest \
+        /openapi.yaml
+    ```
+
 3. Perform an http request to the mock server:
 
     ```bash
