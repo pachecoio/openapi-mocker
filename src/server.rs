@@ -10,7 +10,9 @@ pub struct AppState {
 }
 
 pub fn get_scope() -> Scope {
-    web::scope("").route("/{status}/{tail:.*}", get().to(handle_all))
+    web::scope("")
+        .route("/{status}/{tail:.*}", get().to(handle_all))
+        .route("/{tail:.*}", get().to(handle_all))
 }
 
 async fn handle_all(req: HttpRequest, data: web::Data<AppState>) -> HttpResponse {
@@ -34,7 +36,7 @@ async fn handle_all(req: HttpRequest, data: web::Data<AppState>) -> HttpResponse
         Ok(resp) => resp,
         Err(e) => {
             eprintln!("Error: {:?}", e);
-            HttpResponse::InternalServerError().finish()
+            HttpResponse::NotFound().finish()
         }
     }
 }
