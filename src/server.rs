@@ -5,10 +5,12 @@ use actix_web::{
 
 use crate::spec::{load_endpoint, load_example, load_response, Method};
 
+/// Application state for the Actix Web server.
 pub struct AppState {
     pub spec: oas3::OpenApiV3Spec,
 }
 
+/// Returns a new Actix Web scope with all the routes for the server.
 pub fn get_scope() -> Scope {
     web::scope("")
         .route("/{status}/{tail:.*}", get().to(handle_all))

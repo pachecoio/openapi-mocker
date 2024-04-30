@@ -2,6 +2,7 @@ use oas3::spec::{Operation, PathItem, Response};
 
 pub type SpecResult<T> = Result<T, Box<dyn std::error::Error>>;
 
+/// HTTP methods
 pub enum Method {
     Get,
     Post,
@@ -29,10 +30,43 @@ impl From<&str> for Method {
     }
 }
 
+/// Load an OpenAPI spec from a file
+///
+/// # Arguments
+/// * `path` - Path to the OpenAPI spec file
+///
+/// # Returns
+/// An OpenAPI spec object
+///
+/// # Example
+/// ```
+/// use openapi_mocker::spec::load_spec;
+///
+/// let spec = load_spec("tests/testdata/petstore.yaml");
+/// assert_eq!(spec.openapi, "3.0.0");
+/// ```
 pub fn load_spec(path: &str) -> oas3::OpenApiV3Spec {
     oas3::from_path(path).unwrap()
 }
 
+/// Load an endpoint from an OpenAPI spec
+///
+/// # Arguments
+/// * `spec` - OpenAPI spec object
+/// * `path` - Path to the endpoint
+/// * `method` - HTTP method
+///
+/// # Returns
+/// An OpenAPI operation object
+///
+/// # Example
+/// ```
+/// use openapi_mocker::spec::{load_spec, load_endpoint, Method};
+///
+/// let spec = load_spec("tests/testdata/petstore.yaml");
+/// let op = load_endpoint(&spec, "/pets", Method::Get).unwrap();
+/// assert_eq!(op.operation_id, Some("listPets".to_string()));
+/// ```
 pub fn load_endpoint(
     spec: &oas3::OpenApiV3Spec,
     path: &str,
@@ -46,6 +80,14 @@ pub fn load_endpoint(
     Ok(op.clone())
 }
 
+/// Load a method from a PathItem
+///
+/// # Arguments
+/// * `method` - HTTP method
+/// * `path_item` - PathItem object
+///
+/// # Returns
+/// An Option with the Operation object
 fn load_method<'a>(method: Method) -> impl Fn(&PathItem) -> Option<&Operation> + 'a {
     move |path_item: &PathItem| match method {
         Method::Get => path_item.get.as_ref(),
@@ -59,6 +101,25 @@ fn load_method<'a>(method: Method) -> impl Fn(&PathItem) -> Option<&Operation> +
     }
 }
 
+/// Load a response from an OpenAPI operation
+///
+/// # Arguments
+/// * `spec` - OpenAPI spec object
+/// * `op` - OpenAPI operation object
+/// * `status` - HTTP status code
+///
+/// # Returns
+/// An OpenAPI response object
+///
+/// # Example
+/// ```
+/// use openapi_mocker::spec::{load_spec, load_endpoint, load_response, Method};
+///
+/// let spec = load_spec("tests/testdata/petstore.yaml");
+/// let op = load_endpoint(&spec, "/pets", Method::Get).unwrap();
+/// let response = load_response(&spec, &op, 200).unwrap();
+/// assert_eq!(response.description, Some("A paged array of pets".to_string()));
+/// ```
 pub fn load_response(
     spec: &oas3::OpenApiV3Spec,
     op: &Operation,
@@ -73,6 +134,40 @@ pub fn load_response(
     }
 }
 
+/// Load an example from an OpenAPI response
+///
+/// # Arguments
+/// * `spec` - OpenAPI spec object
+/// * `response` - OpenAPI response object
+/// * `content_type` - Content type
+///
+/// # Returns
+/// A JSON value with the example
+///
+/// # Example
+/// ```
+/// use openapi_mocker::spec::{load_spec, load_endpoint, load_response, load_example, Method};
+/// use serde_json::json;
+///
+/// let spec = load_spec("tests/testdata/petstore.yaml");
+/// let op = load_endpoint(&spec, "/pets", Method::Get).unwrap();
+/// let response = load_response(&spec, &op, 200).unwrap();
+/// let content_type = "application/json";
+/// let example = load_example(&spec, &response, content_type).unwrap();
+/// let expected = json!([
+///     {
+///         "id": 1,
+///         "name": "doggie",
+///         "tag": "dog"
+///         },
+///     {
+///         "id": 2,
+///         "name": "kitty",
+///         "tag": "cat"
+///     }
+/// ]);
+/// assert_eq!(example, expected);
+/// ```
 pub fn load_example(
     spec: &oas3::OpenApiV3Spec,
     response: &Response,
