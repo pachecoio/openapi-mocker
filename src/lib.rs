@@ -34,6 +34,7 @@
 //!
 use clap::Parser;
 use std::path::PathBuf;
+pub mod openapi;
 pub mod server;
 pub mod spec;
 
