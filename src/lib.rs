@@ -32,7 +32,7 @@ pub mod openapi;
 pub mod server;
 
 #[derive(Parser)]
-#[clap(version = "0.1.2", author = "Thiago Pacheco")]
+#[clap(version = "0.1.3", author = "Thiago Pacheco")]
 pub struct Args {
     #[clap(index = 1)]
     pub spec: PathBuf,
