@@ -20,7 +20,7 @@ cargo install openapi-mocker
       title: Example API
       version: 1.0.0
     paths:
-        /hello:
+        /hello/{name}:
             get:
                 responses:
                     '200':
@@ -32,8 +32,10 @@ cargo install openapi-mocker
                                     properties:
                                         message:
                                             type: string
-                                    example:
-                                        message: Hello, world!
+                                examples:
+                                    default:
+                                        value:
+                                            message: Hello, world!
                     '400':
                         description: Bad Request
                         content:
@@ -43,12 +45,11 @@ cargo install openapi-mocker
                                     properties:
                                         message:
                                             type: string
-                                    example:
-                                        message: Bad request
+                                examples:
+                                    default:
+                                        value:
+                                            message: Bad request
     ```
-
-    > Note: The `example` field under the `content.schema` object is used
-    to generate the mock response.
 
 2. Run the mock server:
 
@@ -91,30 +92,180 @@ cargo install openapi-mocker
 
 ## Performing requests
 
-The mock server will respond to any request with a response defined in the OpenAPI specification.
-If the request does not match any of the paths defined in the specification, the server will respond with a 404 Not Found.
+You can use custom examples defined in the OpenAPI specification to test different responses.
+Custom examples can be defined and requested in different ways.
 
-By default, requesting an existing path defined in the specification will return a 200 response
-with the example response defined in the specification.
+## Requesting by path
 
-### Request different status codes
+You can define an example with the exact path you want to match.
+Example:
+    
+    ```yaml
+    openapi: 3.0.0
+    info:
+      title: Example API
+      version: 1.0.0
+    paths:
+        /hello/{name}:
+            get:
+                responses:
+                    '200':
+                        description: OK
+                        content:
+                            application/json:
+                                schema:
+                                    type: object
+                                    properties:
+                                        message:
+                                            type: string
+                                examples:
+                                    default:
+                                        value:
+                                            message: Hello, world!
+                                    /hello/jon_snow:
+                                        value:
+                                            message: You know nothing, Jon Snow!
+    ```
 
-To request a different status code, use the base url with the status code as a path parameter.
+Request the example by the exact path:
+    ```bash
+    curl -i http://localhost:8080/hello/jon_snow
+    ```
+    
+    The response should be:
+    
+    ```json
+    {"message":"You know nothing, Jon Snow!"}
+    ```
 
-For example, to request a 400 response example:
+Request the default example:
+    ```bash
+    curl -i http://localhost:8080/hello/arya_stark
+    ```
+    
+    The response should be:
+    
+    ```json
+    {"message":"Hello, world!"}
+    ```
 
-```bash
-curl -i http://localhost:8080/400/hello
-```
+## Requesting by query parameter
 
-The response should be:
+You can define an example with a query parameter you want to match.
 
-```json
-{"message":"Bad request"}
-```
+Example:
+    
+    ```yaml
+    openapi: 3.0.0
+    info:
+      title: Example API
+      version: 1.0.0
+    paths:
+        /hello:
+            get:
+                parameters:
+                    - name: name
+                      in: query
+                      required: true
+                      schema:
+                        type: string
+                responses:
+                    '200':
+                        description: OK
+                        content:
+                            application/json:
+                                schema:
+                                    type: object
+                                    properties:
+                                        message:
+                                            type: string
+                                examples:
+                                    default:
+                                        value:
+                                            message: Hello, world!
+                                    "query:name=sansa":
+                                        value:
+                                            message: Sansa Stark
+    ```
 
-> Note: The status code must be defined in the OpenAPI specification.
-> Requesting a status code that is not defined in the specification will return a 404 Not Found.
+Request the example by the query parameter:
+    ```bash
+    curl -i http://localhost:8080/hello?name=sansa
+    ```
+    The response should be:
+    ```json
+    {"message": "Sansa Stark"}
+    ```
+
+Request that does not match the query parameter:
+    ```bash
+    curl -i http://localhost:8080/hello?name=arya
+    ```
+    The response should be:
+    ```json
+    {"message": "Hello, world!"}
+    ```
+
+## Requesting by headers
+
+You can define an example with a header you want to match.
+
+Example:
+    
+    ```yaml
+    openapi: 3.0.0
+    info:
+      title: Example API
+      version: 1.0.0
+    paths:
+        /hello:
+            get:
+                parameters:
+                    - name: name
+                      in: header
+                      required: true
+                      schema:
+                        type: string
+                responses:
+                    '200':
+                        description: OK
+                        content:
+                            application/json:
+                                schema:
+                                    type: object
+                                    properties:
+                                        message:
+                                            type: string
+                                examples:
+                                    default:
+                                        value:
+                                            message: Hello, world!
+                                    "header:x-name=tyrion":
+                                        value:
+                                            message: Tyrion Lannister
+    ```
+
+Request the example by the header:
+    ```bash
+    curl -i http://localhost:8080/hello -H "x-name: tyrion"
+    ```
+    The response should be:
+    ```json
+    {"message": "Tyrion Lannister"}
+    ```
+    
+Request that does not match the header:
+    ```bash
+    curl -i http://localhost:8080/hello
+    ```
+    The response should be:
+    ```json
+    {"message": "Hello, world!"}
+    ```
+
+## Contributing
+
+Contributions are welcome! Please see the [contributing guidelines](CONTRIBUTING.md).
 
 ## License
 

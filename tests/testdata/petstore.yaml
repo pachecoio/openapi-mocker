@@ -52,7 +52,6 @@ paths:
             text/plain:
               schema:
                 type: string
-                example: "Not implemented"
         default:
           description: unexpected error
           content:
@@ -138,13 +137,6 @@ components:
       type: array
       items:
         $ref: "#/components/schemas/Pet"
-      example:
-        - id: 1
-          name: doggie
-          tag: dog
-        - id: 2
-          name: kitty
-          tag: cat
     Error:
       required:
         - code

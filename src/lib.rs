@@ -23,22 +23,16 @@
 //! You can then make requests to the server to get example responses.
 //! For example, to get a list of pets:
 //! ```sh
-//! curl http://localhost:8080/200/pets
+//! curl http://localhost:8080/pets
 //! ```
 //! This will return a list of pets from the example response in the spec.
-//! You can also specify a different status code in the URL:
-//! ```sh
-//! curl http://localhost:8080/404/pets
-//! ```
-//! This will return a 404 status code with the example response for a 404 error.
-//!
 use clap::Parser;
 use std::path::PathBuf;
 pub mod openapi;
 pub mod server;
 
 #[derive(Parser)]
-#[clap(version = "0.1.0", author = "Thiago Pacheco")]
+#[clap(version = "0.1.2", author = "Thiago Pacheco")]
 pub struct Args {
     #[clap(index = 1)]
     pub spec: PathBuf,

@@ -10,11 +10,60 @@ pub struct Spec {
 }
 
 impl Spec {
+    /// Create a new Spec from an OpenAPI spec file.
+    /// # Arguments
+    /// * `path` - Path to the OpenAPI spec file
+    /// # Returns
+    /// A Spec instance
+    /// # Errors
+    /// Returns an error if the spec file cannot be loaded.
+    /// # Example
+    /// ```rust
+    /// use openapi_mocker::openapi::spec::Spec;
+    /// let spec = Spec::from_path("tests/testdata/petstore.yaml").unwrap();
+    /// ```
+    /// This will create a new Spec instance from the Petstore spec.
+    /// You can then use the `get_example` method to get example responses.
     pub fn from_path(path: &str) -> SpecResult<Self> {
         let spec = load_spec(path).ok_or("Failed to load spec")?;
         Ok(Self { spec })
     }
 
+    /// Get an example response for a request.
+    /// # Arguments
+    /// * `req` - The HTTP request
+    /// # Returns
+    /// An example response as a JSON value
+    /// # Example
+    /// ```rust
+    /// use actix_web::test::TestRequest;
+    /// use openapi_mocker::openapi::spec::Spec;
+    /// let spec = Spec::from_path("tests/testdata/petstore.yaml").unwrap();
+    /// let req = TestRequest::with_uri("/pets").to_http_request();
+    /// let example = spec.get_example(&req);
+    /// ```
+    ///
+    /// You can also load a specific example by matching the request path, query, or headers.
+    /// # Example with exact path match
+    /// ```rust
+    /// use actix_web::test::TestRequest;
+    /// use openapi_mocker::openapi::spec::Spec;
+    /// let spec = Spec::from_path("tests/testdata/petstore.yaml").unwrap();
+    /// let req = TestRequest::with_uri("/pets/2").to_http_request();
+    /// let example = spec.get_example(&req).unwrap();
+    /// assert_eq!(example["id"], serde_json::Value::Number(serde_json::Number::from(2)));
+    /// ```
+    ///
+    /// # Example with query parameters
+    /// ```rust
+    /// use actix_web::test::TestRequest;
+    /// use openapi_mocker::openapi::spec::Spec;
+    /// let spec = Spec::from_path("tests/testdata/petstore.yaml").unwrap();
+    /// let req = TestRequest::with_uri("/pets?page=1").to_http_request();
+    /// let examples = spec.get_example(&req).unwrap();
+    /// let example = examples.as_array().unwrap().get(0).unwrap();
+    /// assert_eq!(example["id"], serde_json::Value::Number(serde_json::Number::from(1)));
+    /// ```
     pub fn get_example(&self, req: &HttpRequest) -> Option<serde_json::Value> {
         let path = req.uri().path();
         let method = req.method().as_str().to_lowercase();
