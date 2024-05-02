@@ -252,23 +252,6 @@ impl HeaderMatcher {
     }
 }
 
-fn get_example<'a>(
-    example_name: &'a str,
-    spec: &'a oas3::OpenApiV3Spec,
-) -> impl Fn(MediaTypeExamples) -> Option<serde_json::Value> + 'a {
-    move |examples: MediaTypeExamples| match examples {
-        MediaTypeExamples::Examples { examples } => examples
-            .get(example_name)
-            .map(|example| example.resolve(spec))
-            .map(|example| match example {
-                Ok(example) => example.value,
-                Err(_) => None,
-            })
-            .flatten(),
-        _ => None,
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
