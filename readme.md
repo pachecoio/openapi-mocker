@@ -263,6 +263,13 @@ Request that does not match the header:
     {"message": "Hello, world!"}
     ```
 
+> Note: The matches occur in the following order: path, query, headers.
+> It is also important to note that the request is going to return the 
+> first match found in the order above. If no match is found, the default
+> example is going to be returned.
+
+> Note: The matches are applied accross all the examples and responses in the OpenAPI specification.
+
 ## Contributing
 
 Contributions are welcome! Please see the [contributing guidelines](CONTRIBUTING.md).

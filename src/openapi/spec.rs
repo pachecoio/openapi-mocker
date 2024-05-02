@@ -468,4 +468,15 @@ mod tests {
             serde_json::Value::Number(serde_json::Number::from(4))
         );
     }
+
+    #[test]
+    fn test_match_401_response() {
+        let spec = Spec::from_path("tests/testdata/petstore.yaml").unwrap();
+        let req = TestRequest::with_uri("/pets/5").to_http_request();
+        let example = spec.get_example(&req).unwrap();
+        assert_eq!(
+            example["code"],
+            serde_json::Value::Number(serde_json::Number::from(401))
+        );
+    }
 }

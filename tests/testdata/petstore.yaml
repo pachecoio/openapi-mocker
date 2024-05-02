@@ -113,6 +113,17 @@ paths:
                     id: 4
                     name: batty
                     tag: bat
+        401:
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+              examples:
+                "/pets/5":
+                  value:
+                    code: 401
+                    message: error
         default:
           description: unexpected error
           content:
