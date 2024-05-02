@@ -20,7 +20,7 @@ cargo install openapi-mocker
       title: Example API
       version: 1.0.0
     paths:
-        /hello/{name}:
+        /hello:
             get:
                 responses:
                     '200':
