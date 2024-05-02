@@ -1,6 +1,6 @@
 [package]
 name = "openapi-mocker"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 repository = "https://github.com/pachecoio/openapi-mocker"
 keywords = ["openapi", "mock", "mock-server"]
