@@ -142,8 +142,8 @@ fn find_example_match<'a>(
     req: &'a HttpRequest,
 ) -> impl Fn(Vec<MediaTypeExamples>) -> Option<ObjectOrReference<Example>> {
     let path = req.uri().path().to_string();
-
-    let query = QueryString::from_request(req);
+    let query = QueryMatcher::from_request(req);
+    let headers = HeaderMatcher::from_request(req);
 
     move |examples: Vec<MediaTypeExamples>| {
         let mut default: Option<ObjectOrReference<Example>> = None;
@@ -161,6 +161,11 @@ fn find_example_match<'a>(
                             return Some(e.clone());
                         }
 
+                        // Match headers
+                        if headers.match_example(&example_name) {
+                            return Some(e.clone());
+                        }
+
                         // Match default example
                         if example_name == "default" {
                             default = Some(e.clone());
@@ -174,11 +179,11 @@ fn find_example_match<'a>(
     }
 }
 
-struct QueryString {
+struct QueryMatcher {
     params: HashMap<String, String>,
 }
 
-impl QueryString {
+impl QueryMatcher {
     fn from_request(req: &HttpRequest) -> Self {
         let mut params = HashMap::new();
         for (key, value) in req.query_string().split('&').map(|pair| {
@@ -200,9 +205,47 @@ impl QueryString {
             }) {
                 query_params.insert(pair.0.to_string(), pair.1.to_string());
             }
-            self.params
+            query_params
                 .iter()
-                .all(|(key, value)| query_params.get(key).map_or(false, |v| v == value))
+                .all(|(key, value)| self.params.get(key).map_or(false, |v| v == value))
+        } else {
+            false
+        }
+    }
+}
+
+struct HeaderMatcher {
+    headers: HashMap<String, String>,
+}
+
+impl HeaderMatcher {
+    fn from_request(req: &HttpRequest) -> Self {
+        let headers = req
+            .headers()
+            .iter()
+            .map(|(key, value)| {
+                (
+                    key.as_str().to_string(),
+                    value.to_str().unwrap_or("").to_string(),
+                )
+            })
+            .collect();
+        Self { headers }
+    }
+
+    fn match_example(&self, example_name: &str) -> bool {
+        if example_name.starts_with("header:") {
+            let header = example_name.trim_start_matches("header:");
+            let mut header_params = HashMap::new();
+            for pair in header.split('&').map(|pair| {
+                let mut split = pair.split('=');
+                (split.next().unwrap(), split.next().unwrap_or(""))
+            }) {
+                header_params.insert(pair.0.to_string(), pair.1.to_string());
+            }
+            header_params
+                .iter()
+                .all(|(key, value)| self.headers.get(key).map_or(false, |v| v == value))
         } else {
             false
         }
@@ -348,6 +391,7 @@ mod tests {
 
         let examples = res.as_array().unwrap();
         assert_eq!(examples.len(), 1,);
+
         let example = examples.get(0).unwrap();
         assert_eq!(
             example["id"],
@@ -363,6 +407,33 @@ mod tests {
         assert_eq!(
             example["id"],
             serde_json::Value::Number(serde_json::Number::from(2))
+        );
+    }
+
+    #[test]
+    fn test_spec_match_headers() {
+        let spec = Spec::from_path("tests/testdata/petstore.yaml").unwrap();
+        let req = TestRequest::with_uri("/pets/4")
+            .insert_header(("x-api-key", "123"))
+            .to_http_request();
+        let example = spec.get_example(&req).unwrap();
+        assert_eq!(
+            example["id"],
+            serde_json::Value::Number(serde_json::Number::from(4))
+        );
+    }
+
+    #[test]
+    fn test_spec_match_headers_with_multiple_headers() {
+        let spec = Spec::from_path("tests/testdata/petstore.yaml").unwrap();
+        let req = TestRequest::with_uri("/pets/4")
+            .insert_header(("x-api-key", "123"))
+            .insert_header(("x-tenant-id", "1"))
+            .to_http_request();
+        let example = spec.get_example(&req).unwrap();
+        assert_eq!(
+            example["id"],
+            serde_json::Value::Number(serde_json::Number::from(4))
         );
     }
 }

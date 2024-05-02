@@ -44,7 +44,7 @@ paths:
                     - id: 2
                       name: kitty
                       tag: cat
-                "query:page=1&limit=1":
+                "query:limit=1&page=1":
                   value:
                     - id: 1
                       name: doggie
@@ -109,6 +109,11 @@ paths:
                     id: 1
                     name: doggie
                     tag: dog
+                "header:x-api-key=123":
+                  value:
+                    id: 4
+                    name: batty
+                    tag: bat
         default:
           description: unexpected error
           content:
