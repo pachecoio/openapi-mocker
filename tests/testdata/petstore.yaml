@@ -104,6 +104,11 @@ paths:
                     id: 2
                     name: kitty
                     tag: cat
+                "query:term=dog":
+                  value:
+                    id: 1
+                    name: doggie
+                    tag: dog
         default:
           description: unexpected error
           content:

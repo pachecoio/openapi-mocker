@@ -354,4 +354,15 @@ mod tests {
             serde_json::Value::Number(serde_json::Number::from(1))
         );
     }
+
+    #[test]
+    fn test_spec_prefer_path_over_query_params() {
+        let spec = Spec::from_path("tests/testdata/petstore.yaml").unwrap();
+        let req = TestRequest::with_uri("/pets/2?term=dog").to_http_request();
+        let example = spec.get_example(&req).unwrap();
+        assert_eq!(
+            example["id"],
+            serde_json::Value::Number(serde_json::Number::from(2))
+        );
+    }
 }
