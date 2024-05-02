@@ -36,7 +36,6 @@ use clap::Parser;
 use std::path::PathBuf;
 pub mod openapi;
 pub mod server;
-pub mod spec;
 
 #[derive(Parser)]
 #[clap(version = "0.1.0", author = "Thiago Pacheco")]
